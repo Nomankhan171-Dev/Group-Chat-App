@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CircleChat</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <section id="login" class="login-page">
+    <div class="login-card">
+      <div class="logo">C</div>
+      <span class="eyebrow">NODE.JS • SOCKET.IO • MONGODB</span>
+      <h1>CircleChat</h1>
+      <p>Enter your name and join the group chat.</p>
+      <form id="loginForm">
+        <input id="nameInput" placeholder="Your name" autocomplete="off" required>
+        <button>Enter Chat</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="app" class="app hidden">
+    <aside>
+      <div class="brand">
+        <div class="logo">C</div>
+        <div><strong>CircleChat</strong><span>Real-time groups</span></div>
+      </div>
+
+      <div class="rooms-head">
+        <span>ROOMS</span>
+        <button id="toggleRoom">＋</button>
+      </div>
+
+      <form id="roomForm" class="room-form hidden">
+        <input id="roomInput" placeholder="New room">
+        <button>Create</button>
+      </form>
+
+      <div id="rooms" class="rooms"></div>
+
+      <div class="profile">
+        <div id="avatar" class="avatar">U</div>
+        <div>
+          <strong id="profileName">User</strong>
+          <span>Online</span>
+        </div>
+        <button id="logout">↗</button>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <div>
+          <span>ROOM</span>
+          <h2 id="roomTitle">#General</h2>
+        </div>
+        <div class="live">● Live</div>
+      </header>
+
+      <div id="error" class="error hidden"></div>
+      <div id="notice" class="notice hidden"></div>
+
+      <section id="messages" class="messages"></section>
+
+      <form id="messageForm" class="composer">
+        <input id="messageInput" placeholder="Type a message..." autocomplete="off">
+        <button>Send</button>
+      </form>
+    </main>
+  </section>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
