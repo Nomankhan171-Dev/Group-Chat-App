@@ -187,9 +187,10 @@ async function start() {
     console.log(`CircleChat running on http://localhost:${PORT}`);
   });
 }
-module.exports = server;
+
 start().catch((err) => {
   console.error("Startup error:", err.message);
   process.exit(1);
 });
+
 module.exports = server;

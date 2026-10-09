@@ -3,72 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CircleChat</title>
+  <title>CircleChat - Two User Test</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <section id="login" class="login-page">
-    <div class="login-card">
-      <div class="logo">C</div>
-      <span class="eyebrow">NODE.JS • SOCKET.IO • MONGODB</span>
-      <h1>CircleChat</h1>
-      <p>Enter your name and join the group chat.</p>
-      <form id="loginForm">
-        <input id="nameInput" placeholder="Your name" autocomplete="off" required>
-        <button>Enter Chat</button>
-      </form>
-    </div>
-  </section>
-
-  <section id="app" class="app hidden">
-    <aside>
-      <div class="brand">
-        <div class="logo">C</div>
-        <div><strong>CircleChat</strong><span>Real-time groups</span></div>
+  <main class="page-shell">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">REAL-TIME CHAT TEST</span>
+        <h1>CircleChat</h1>
+        <p>Two users, one chat, one screen.</p>
       </div>
+      <div class="status">● Live</div>
+    </header>
 
-      <div class="rooms-head">
-        <span>ROOMS</span>
-        <button id="toggleRoom">＋</button>
-      </div>
-
-      <form id="roomForm" class="room-form hidden">
-        <input id="roomInput" placeholder="New room">
-        <button>Create</button>
-      </form>
-
-      <div id="rooms" class="rooms"></div>
-
-      <div class="profile">
-        <div id="avatar" class="avatar">U</div>
-        <div>
-          <strong id="profileName">User</strong>
-          <span>Online</span>
+    <section class="chat-grid">
+      <article class="chat-panel" data-panel="a">
+        <div class="panel-head">
+          <div>
+            <span class="label">USER 1</span>
+            <h2 id="titleA">User 1</h2>
+          </div>
+          <div class="name-editor">
+            <input id="nameA" value="User 1" maxlength="40" aria-label="User 1 name">
+            <button id="applyA" type="button">Update</button>
+          </div>
         </div>
-        <button id="logout">↗</button>
-      </div>
-    </aside>
 
-    <main>
-      <header>
-        <div>
-          <span>ROOM</span>
-          <h2 id="roomTitle">#General</h2>
+        <div class="room-line"># General</div>
+        <div id="errorA" class="error hidden"></div>
+        <section id="messagesA" class="messages" aria-live="polite"></section>
+
+        <form id="formA" class="composer">
+          <input id="inputA" placeholder="Message as User 1..." autocomplete="off" maxlength="1000">
+          <button>Send</button>
+        </form>
+      </article>
+
+      <article class="chat-panel" data-panel="b">
+        <div class="panel-head">
+          <div>
+            <span class="label">USER 2</span>
+            <h2 id="titleB">User 2</h2>
+          </div>
+          <div class="name-editor">
+            <input id="nameB" value="User 2" maxlength="40" aria-label="User 2 name">
+            <button id="applyB" type="button">Update</button>
+          </div>
         </div>
-        <div class="live">● Live</div>
-      </header>
 
-      <div id="error" class="error hidden"></div>
-      <div id="notice" class="notice hidden"></div>
+        <div class="room-line"># General</div>
+        <div id="errorB" class="error hidden"></div>
+        <section id="messagesB" class="messages" aria-live="polite"></section>
 
-      <section id="messages" class="messages"></section>
-
-      <form id="messageForm" class="composer">
-        <input id="messageInput" placeholder="Type a message..." autocomplete="off">
-        <button>Send</button>
-      </form>
-    </main>
-  </section>
+        <form id="formB" class="composer">
+          <input id="inputB" placeholder="Message as User 2..." autocomplete="off" maxlength="1000">
+          <button>Send</button>
+        </form>
+      </article>
+    </section>
+  </main>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/app.js"></script>

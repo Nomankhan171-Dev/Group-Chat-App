@@ -1,162 +1,129 @@
+const ROOM_ID = "general";
 
-const socket = io();
+function createChatClient({ socket, nameInputId, titleId, applyId, formId, inputId, messagesId, errorId }) {
+  const nameInput = document.getElementById(nameInputId);
+  const title = document.getElementById(titleId);
+  const applyBtn = document.getElementById(applyId);
+  const form = document.getElementById(formId);
+  const input = document.getElementById(inputId);
+  const messages = document.getElementById(messagesId);
+  const errorEl = document.getElementById(errorId);
 
-const login = document.getElementById("login");
-const app = document.getElementById("app");
-const loginForm = document.getElementById("loginForm");
-const nameInput = document.getElementById("nameInput");
-const roomsEl = document.getElementById("rooms");
-const messagesEl = document.getElementById("messages");
-const roomTitle = document.getElementById("roomTitle");
-const messageForm = document.getElementById("messageForm");
-const messageInput = document.getElementById("messageInput");
-const roomForm = document.getElementById("roomForm");
-const roomInput = document.getElementById("roomInput");
-const toggleRoom = document.getElementById("toggleRoom");
-const errorEl = document.getElementById("error");
-const noticeEl = document.getElementById("notice");
-const profileName = document.getElementById("profileName");
-const avatar = document.getElementById("avatar");
-const logoutBtn = document.getElementById("logout");
+  let userName = nameInput.value.trim();
+  let currentRoom = ROOM_ID;
 
-let userName = localStorage.getItem("circlechat_name") || "";
-let activeRoom = "general";
-let rooms = [];
-
-function initials(name) {
-  return name.split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase();
-}
-
-function showError(text) {
-  errorEl.textContent = text;
-  errorEl.classList.remove("hidden");
-  setTimeout(() => errorEl.classList.add("hidden"), 4500);
-}
-
-function showNotice(text) {
-  noticeEl.textContent = text;
-  noticeEl.classList.remove("hidden");
-  setTimeout(() => noticeEl.classList.add("hidden"), 2200);
-}
-
-function enterChat() {
-  login.classList.add("hidden");
-  app.classList.remove("hidden");
-  profileName.textContent = userName;
-  avatar.textContent = initials(userName);
-  socket.emit("user:join", { name: userName, roomId: activeRoom });
-}
-
-if (userName) enterChat();
-
-loginForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  userName = nameInput.value.trim();
-  if (!userName) return;
-  localStorage.setItem("circlechat_name", userName);
-  enterChat();
-});
-
-socket.on("rooms:list", (list) => {
-  rooms = list;
-  renderRooms();
-});
-
-socket.on("room:history", ({ room, messages }) => {
-  activeRoom = room.roomId;
-  roomTitle.textContent = `#${room.name}`;
-  messagesEl.innerHTML = "";
-  if (!messages.length) {
-    messagesEl.innerHTML = '<div class="empty"><h3>Start the conversation</h3><p>No messages yet.</p></div>';
-  } else {
-    messages.forEach(addMessage);
+  function showError(text) {
+    errorEl.textContent = text;
+    errorEl.classList.remove("hidden");
+    setTimeout(() => errorEl.classList.add("hidden"), 3500);
   }
-  renderRooms();
-});
 
-socket.on("message:new", (message) => {
-  const empty = messagesEl.querySelector(".empty");
-  if (empty) empty.remove();
-  addMessage(message);
-});
-
-socket.on("room:notice", ({ text }) => showNotice(text));
-socket.on("app:error", showError);
-
-function renderRooms() {
-  roomsEl.innerHTML = "";
-  rooms.forEach((room) => {
-    const btn = document.createElement("button");
-    btn.textContent = `${room.emoji || "💬"} #${room.name}`;
-    if (room.roomId === activeRoom) btn.classList.add("active");
-    btn.onclick = () => {
-      activeRoom = room.roomId;
-      socket.emit("room:switch", room.roomId);
-    };
-    roomsEl.appendChild(btn);
-  });
-}
-
-function addMessage(message) {
-  const item = document.createElement("article");
-  item.className = "message" + (message.sender === userName ? " mine" : "");
-
-  const time = message.createdAt
-    ? new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : "now";
-
-  item.innerHTML = `
-    <div class="meta">
-      <strong>${escapeHtml(message.sender === userName ? "You" : message.sender)}</strong>
-      <span>${time}</span>
-    </div>
-    <div class="bubble">${escapeHtml(message.text)}</div>
-  `;
-
-  messagesEl.appendChild(item);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-messageForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const text = messageInput.value.trim();
-  if (!text) return;
-  socket.emit("message:send", text);
-  messageInput.value = "";
-});
-
-toggleRoom.addEventListener("click", () => {
-  roomForm.classList.toggle("hidden");
-});
-
-roomForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const name = roomInput.value.trim();
-  if (!name) return;
-
-  socket.emit("room:create", name, (result) => {
-    if (!result?.ok) {
-      showError(result?.error || "Could not create room.");
+  function join() {
+    const nextName = nameInput.value.trim();
+    if (!nextName) {
+      showError("Please enter a name.");
       return;
     }
 
-    roomInput.value = "";
-    roomForm.classList.add("hidden");
-    activeRoom = result.room.roomId;
-    socket.emit("room:switch", result.room.roomId);
+    userName = nextName;
+    title.textContent = userName;
+    input.placeholder = `Message as ${userName}...`;
+    socket.emit("user:join", { name: userName, roomId: currentRoom });
+  }
+
+  function clearMessages() {
+    messages.innerHTML = "";
+  }
+
+  function addMessage(message) {
+    const item = document.createElement("article");
+    const isMine = message.sender === userName;
+    item.className = `message${isMine ? " mine" : ""}`;
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+
+    const sender = document.createElement("strong");
+    sender.textContent = isMine ? "You" : message.sender;
+
+    const time = document.createElement("span");
+    time.textContent = message.createdAt
+      ? new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "now";
+
+    meta.append(sender, time);
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = message.text;
+
+    item.append(meta, bubble);
+    messages.appendChild(item);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  socket.on("connect", join);
+
+  socket.on("room:history", ({ room, messages: history }) => {
+    currentRoom = room?.roomId || ROOM_ID;
+    clearMessages();
+
+    if (!history.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "No messages yet. Start the conversation.";
+      messages.appendChild(empty);
+      return;
+    }
+
+    history.forEach(addMessage);
   });
-});
 
-logoutBtn.addEventListener("click", () => {
-  localStorage.removeItem("circlechat_name");
-  location.reload();
-});
+  socket.on("message:new", (message) => {
+    const empty = messages.querySelector(".empty");
+    if (empty) empty.remove();
+    addMessage(message);
+  });
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  socket.on("app:error", showError);
+
+  applyBtn.addEventListener("click", join);
+
+  nameInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      join();
+    }
+  });
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    socket.emit("message:send", text);
+    input.value = "";
+    input.focus();
+  });
 }
+
+createChatClient({
+  socket: io(),
+  nameInputId: "nameA",
+  titleId: "titleA",
+  applyId: "applyA",
+  formId: "formA",
+  inputId: "inputA",
+  messagesId: "messagesA",
+  errorId: "errorA"
+});
+
+createChatClient({
+  socket: io(),
+  nameInputId: "nameB",
+  titleId: "titleB",
+  applyId: "applyB",
+  formId: "formB",
+  inputId: "inputB",
+  messagesId: "messagesB",
+  errorId: "errorB"
+});

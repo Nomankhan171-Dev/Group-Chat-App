@@ -1,66 +1,19 @@
-# CircleChat — Node.js + MongoDB
+# CircleChat — Two User Test View
 
-Real-time group chat built with:
+A Node.js + Express + Socket.IO + MongoDB chat app designed for easy testing with two users on one screen.
 
-- Node.js
-- Express
-- Socket.IO
-- MongoDB
-- Mongoose
-- HTML / CSS / JavaScript
+## What changed
+- No room/group selector on the frontend.
+- Two independent chat windows are visible side by side.
+- User 1 and User 2 each use their own Socket.IO connection.
+- Both users are automatically connected to the same `general` room.
+- Names can be changed from either panel with the Update button.
+- Messages are stored in MongoDB exactly like the original app.
 
-## Features
+## Environment variable
+Create `MONGODB_URI` in your hosting environment or `.env` file.
 
-- Real-time group chat
-- Multiple chat rooms
-- Create rooms
-- MongoDB message history
-- MongoDB room storage
-- Name-based entry
-- Timestamps
-- Responsive dark UI
+Example format:
+`mongodb+srv://USERNAME:PASSWORD@CLUSTER.mongodb.net/circlechat?appName=Cluster0`
 
-## 1. Install
-
-```bash
-npm install
-```
-
-## 2. Create `.env`
-
-Copy `.env.example` to `.env`.
-
-Example:
-
-```env
-MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@CLUSTER.mongodb.net/circlechat
-PORT=3000
-```
-
-## 3. MongoDB Atlas
-
-Create a free MongoDB Atlas database.
-
-Then:
-1. Create database user
-2. Add your IP in Network Access
-3. Copy the connection string
-4. Paste it into `MONGODB_URI`
-
-## 4. Run
-
-```bash
-npm start
-```
-
-Open:
-
-```text
-http://localhost:3000
-```
-
-## Deploy
-
-This app needs a Node.js server, so deploy it on a Node-friendly platform such as Render, Railway, or another service that can run Express + Socket.IO.
-
-Vercel static hosting alone is not ideal for a persistent Socket.IO server.
+Do not commit your real password to GitHub.
