@@ -1,78 +1,104 @@
-const ROOM_ID = "general";
+function createUserWindow(config) {
+  const socket = io();
 
-function createChatClient({ socket, nameInputId, titleId, applyId, formId, inputId, messagesId, errorId }) {
-  const nameInput = document.getElementById(nameInputId);
-  const title = document.getElementById(titleId);
-  const applyBtn = document.getElementById(applyId);
-  const form = document.getElementById(formId);
-  const input = document.getElementById(inputId);
-  const messages = document.getElementById(messagesId);
-  const errorEl = document.getElementById(errorId);
+  const joinForm = document.getElementById(config.joinFormId);
+  const chatCard = document.getElementById(config.chatCardId);
+  const nameInput = document.getElementById(config.nameId);
+  const roomInput = document.getElementById(config.roomId);
+  const roomLabel = document.getElementById(config.roomLabelId);
+  const joinError = document.getElementById(config.joinErrorId);
+  const chatError = document.getElementById(config.chatErrorId);
+  const messages = document.getElementById(config.messagesId);
+  const messageForm = document.getElementById(config.messageFormId);
+  const messageInput = document.getElementById(config.messageId);
+  const leaveBtn = document.getElementById(config.leaveId);
 
-  let userName = nameInput.value.trim();
-  let currentRoom = ROOM_ID;
+  let username = "";
+  let activeRoom = "";
+  let isJoined = false;
 
-  function showError(text) {
-    errorEl.textContent = text;
-    errorEl.classList.remove("hidden");
-    setTimeout(() => errorEl.classList.add("hidden"), 3500);
+  function showError(element, text) {
+    element.textContent = text;
+    element.classList.remove("hidden");
+    clearTimeout(element._timer);
+    element._timer = setTimeout(() => element.classList.add("hidden"), 3500);
   }
 
-  function join() {
-    const nextName = nameInput.value.trim();
-    if (!nextName) {
-      showError("Please enter a name.");
-      return;
-    }
-
-    userName = nextName;
-    title.textContent = userName;
-    input.placeholder = `Message as ${userName}...`;
-    socket.emit("user:join", { name: userName, roomId: currentRoom });
-  }
-
-  function clearMessages() {
+  function showJoinScreen() {
+    isJoined = false;
+    activeRoom = "";
+    chatCard.classList.add("hidden");
+    joinForm.classList.remove("hidden");
     messages.innerHTML = "";
+    roomLabel.textContent = "-";
+    roomInput.focus();
+  }
+
+  function showChatScreen(roomId) {
+    activeRoom = roomId;
+    isJoined = true;
+    roomLabel.textContent = roomId;
+    joinForm.classList.add("hidden");
+    chatCard.classList.remove("hidden");
+    messageInput.focus();
+  }
+
+  function renderEmpty() {
+    messages.innerHTML = '<div class="empty-state">No messages yet. Start the conversation.</div>';
+  }
+
+  function clearEmpty() {
+    const empty = messages.querySelector(".empty-state");
+    if (empty) empty.remove();
   }
 
   function addMessage(message) {
-    const item = document.createElement("article");
-    const isMine = message.sender === userName;
-    item.className = `message${isMine ? " mine" : ""}`;
+    clearEmpty();
 
-    const meta = document.createElement("div");
-    meta.className = "meta";
-
-    const sender = document.createElement("strong");
-    sender.textContent = isMine ? "You" : message.sender;
-
-    const time = document.createElement("span");
-    time.textContent = message.createdAt
-      ? new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      : "now";
-
-    meta.append(sender, time);
+    const row = document.createElement("div");
+    const mine = message.sender === username;
+    row.className = `message-row${mine ? " mine" : ""}`;
 
     const bubble = document.createElement("div");
-    bubble.className = "bubble";
-    bubble.textContent = message.text;
+    bubble.className = "message-bubble";
 
-    item.append(meta, bubble);
-    messages.appendChild(item);
+    const sender = document.createElement("strong");
+    sender.textContent = message.sender;
+
+    bubble.appendChild(sender);
+    bubble.appendChild(document.createTextNode(`: ${message.text}`));
+    row.appendChild(bubble);
+    messages.appendChild(row);
     messages.scrollTop = messages.scrollHeight;
   }
 
-  socket.on("connect", join);
+  joinForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const name = nameInput.value.trim();
+    const room = roomInput.value.trim();
+
+    if (!name) {
+      showError(joinError, "Please enter username.");
+      return;
+    }
+    if (!room) {
+      showError(joinError, "Please enter Room ID.");
+      return;
+    }
+
+    username = name;
+    activeRoom = room;
+    socket.emit("user:join", { name: username, roomId: activeRoom });
+  });
 
   socket.on("room:history", ({ room, messages: history }) => {
-    currentRoom = room?.roomId || ROOM_ID;
-    clearMessages();
+    if (!room) return;
+    showChatScreen(room.roomId);
+    messages.innerHTML = "";
 
-    if (!history.length) {
-      const empty = document.createElement("div");
-      empty.className = "empty";
-      empty.textContent = "No messages yet. Start the conversation.";
-      messages.appendChild(empty);
+    if (!history || history.length === 0) {
+      renderEmpty();
       return;
     }
 
@@ -80,50 +106,60 @@ function createChatClient({ socket, nameInputId, titleId, applyId, formId, input
   });
 
   socket.on("message:new", (message) => {
-    const empty = messages.querySelector(".empty");
-    if (empty) empty.remove();
+    if (!isJoined || message.roomId !== activeRoom) return;
     addMessage(message);
   });
 
-  socket.on("app:error", showError);
-
-  applyBtn.addEventListener("click", join);
-
-  nameInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      join();
-    }
+  socket.on("app:error", (text) => {
+    showError(isJoined ? chatError : joinError, text || "Something went wrong.");
   });
 
-  form.addEventListener("submit", (event) => {
+  messageForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    const text = input.value.trim();
-    if (!text) return;
+    const text = messageInput.value.trim();
+    if (!text || !isJoined) return;
+
     socket.emit("message:send", text);
-    input.value = "";
-    input.focus();
+    messageInput.value = "";
+    messageInput.focus();
+  });
+
+  leaveBtn.addEventListener("click", () => {
+    socket.emit("user:leave");
+    showJoinScreen();
+  });
+
+  socket.on("connect", () => {
+    if (isJoined && username && activeRoom) {
+      socket.emit("user:join", { name: username, roomId: activeRoom });
+    }
   });
 }
 
-createChatClient({
-  socket: io(),
-  nameInputId: "nameA",
-  titleId: "titleA",
-  applyId: "applyA",
-  formId: "formA",
-  inputId: "inputA",
+createUserWindow({
+  joinFormId: "joinFormA",
+  chatCardId: "chatCardA",
+  nameId: "nameA",
+  roomId: "roomA",
+  roomLabelId: "roomLabelA",
+  joinErrorId: "joinErrorA",
+  chatErrorId: "chatErrorA",
   messagesId: "messagesA",
-  errorId: "errorA"
+  messageFormId: "messageFormA",
+  messageId: "messageA",
+  leaveId: "leaveA"
 });
 
-createChatClient({
-  socket: io(),
-  nameInputId: "nameB",
-  titleId: "titleB",
-  applyId: "applyB",
-  formId: "formB",
-  inputId: "inputB",
+createUserWindow({
+  joinFormId: "joinFormB",
+  chatCardId: "chatCardB",
+  nameId: "nameB",
+  roomId: "roomB",
+  roomLabelId: "roomLabelB",
+  joinErrorId: "joinErrorB",
+  chatErrorId: "chatErrorB",
   messagesId: "messagesB",
-  errorId: "errorB"
+  messageFormId: "messageFormB",
+  messageId: "messageB",
+  leaveId: "leaveB"
 });

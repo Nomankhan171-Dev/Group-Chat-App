@@ -64,30 +64,42 @@ io.on("connection", async (socket) => {
   }
 
   socket.on("user:join", async ({ name, roomId }) => {
-    const username = cleanText(name, 40);
-    if (!username) return;
+    try {
+      const username = cleanText(name, 40);
+      const requestedRoomId = cleanText(roomId, 35);
+      if (!username || !requestedRoomId) return;
 
-    let room = await Room.findOne({ roomId }).lean();
-    if (!room) room = await Room.findOne({ roomId: "general" }).lean();
-    if (!room) return;
+      let room = await Room.findOne({ roomId: requestedRoomId }).lean();
 
-    if (socket.data.roomId) socket.leave(socket.data.roomId);
+      if (!room) {
+        const created = await Room.create({
+          roomId: requestedRoomId,
+          name: requestedRoomId,
+          emoji: "💬"
+        });
+        room = created.toObject();
+      }
 
-    socket.data.name = username;
-    socket.data.roomId = room.roomId;
-    socket.join(room.roomId);
+      if (socket.data.roomId) socket.leave(socket.data.roomId);
 
-    const history = await getRecentMessages(room.roomId);
+      socket.data.name = username;
+      socket.data.roomId = room.roomId;
+      socket.join(room.roomId);
 
-    socket.emit("room:history", {
-      room,
-      messages: history
-    });
+      socket.emit("room:history", {
+        room,
+        messages: await getRecentMessages(room.roomId)
+      });
+    } catch (error) {
+      socket.emit("app:error", "Could not join this room.");
+    }
+  });
 
-    socket.to(room.roomId).emit("room:notice", {
-      text: `${username} joined #${room.name}`,
-      createdAt: Date.now()
-    });
+  socket.on("user:leave", () => {
+    const roomId = socket.data.roomId;
+    if (roomId) socket.leave(roomId);
+    socket.data.name = null;
+    socket.data.roomId = null;
   });
 
   socket.on("room:switch", async (roomId) => {

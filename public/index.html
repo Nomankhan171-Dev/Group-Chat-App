@@ -3,64 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CircleChat - Two User Test</title>
+  <title>Group Chat - Two User Test</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <main class="page-shell">
-    <header class="topbar">
-      <div>
-        <span class="eyebrow">REAL-TIME CHAT TEST</span>
-        <h1>CircleChat</h1>
-        <p>Two users, one chat, one screen.</p>
-      </div>
-      <div class="status">● Live</div>
-    </header>
+    <header class="page-title">✨ <span>Group Chat</span> 🥰</header>
 
-    <section class="chat-grid">
-      <article class="chat-panel" data-panel="a">
-        <div class="panel-head">
-          <div>
-            <span class="label">USER 1</span>
-            <h2 id="titleA">User 1</h2>
-          </div>
-          <div class="name-editor">
-            <input id="nameA" value="User 1" maxlength="40" aria-label="User 1 name">
-            <button id="applyA" type="button">Update</button>
-          </div>
-        </div>
+    <section class="user-grid">
+      <section class="user-column" data-user="1">
+        <h2>User Window 1</h2>
 
-        <div class="room-line"># General</div>
-        <div id="errorA" class="error hidden"></div>
-        <section id="messagesA" class="messages" aria-live="polite"></section>
+        <form id="joinFormA" class="join-card">
+          <h3>Join a Chat Group</h3>
+          <label for="nameA">Username</label>
+          <input id="nameA" type="text" placeholder="Enter your name" maxlength="40" autocomplete="off" required>
 
-        <form id="formA" class="composer">
-          <input id="inputA" placeholder="Message as User 1..." autocomplete="off" maxlength="1000">
-          <button>Send</button>
+          <label for="roomA">Room ID</label>
+          <input id="roomA" type="text" placeholder="E.g. 12" maxlength="35" autocomplete="off" required>
+
+          <div id="joinErrorA" class="form-error hidden"></div>
+          <button class="join-btn" type="submit">Join Room</button>
         </form>
-      </article>
 
-      <article class="chat-panel" data-panel="b">
-        <div class="panel-head">
-          <div>
-            <span class="label">USER 2</span>
-            <h2 id="titleB">User 2</h2>
-          </div>
-          <div class="name-editor">
-            <input id="nameB" value="User 2" maxlength="40" aria-label="User 2 name">
-            <button id="applyB" type="button">Update</button>
-          </div>
-        </div>
+        <section id="chatCardA" class="chat-card hidden">
+          <header class="chat-header">
+            <strong>Room: <span id="roomLabelA">-</span></strong>
+            <button id="leaveA" class="leave-btn" type="button">Leave</button>
+          </header>
 
-        <div class="room-line"># General</div>
-        <div id="errorB" class="error hidden"></div>
-        <section id="messagesB" class="messages" aria-live="polite"></section>
+          <div id="messagesA" class="messages" aria-live="polite"></div>
+          <div id="chatErrorA" class="form-error chat-error hidden"></div>
 
-        <form id="formB" class="composer">
-          <input id="inputB" placeholder="Message as User 2..." autocomplete="off" maxlength="1000">
-          <button>Send</button>
+          <form id="messageFormA" class="composer">
+            <input id="messageA" type="text" placeholder="Type message..." maxlength="1000" autocomplete="off">
+            <button type="submit">Send</button>
+          </form>
+        </section>
+      </section>
+
+      <section class="user-column" data-user="2">
+        <h2>User Window 2</h2>
+
+        <form id="joinFormB" class="join-card">
+          <h3>Join a Chat Group</h3>
+          <label for="nameB">Username</label>
+          <input id="nameB" type="text" placeholder="Enter your name" maxlength="40" autocomplete="off" required>
+
+          <label for="roomB">Room ID</label>
+          <input id="roomB" type="text" placeholder="E.g. 12" maxlength="35" autocomplete="off" required>
+
+          <div id="joinErrorB" class="form-error hidden"></div>
+          <button class="join-btn" type="submit">Join Room</button>
         </form>
-      </article>
+
+        <section id="chatCardB" class="chat-card hidden">
+          <header class="chat-header">
+            <strong>Room: <span id="roomLabelB">-</span></strong>
+            <button id="leaveB" class="leave-btn" type="button">Leave</button>
+          </header>
+
+          <div id="messagesB" class="messages" aria-live="polite"></div>
+          <div id="chatErrorB" class="form-error chat-error hidden"></div>
+
+          <form id="messageFormB" class="composer">
+            <input id="messageB" type="text" placeholder="Type message..." maxlength="1000" autocomplete="off">
+            <button type="submit">Send</button>
+          </form>
+        </section>
+      </section>
     </section>
   </main>
 

@@ -1,19 +1,19 @@
-# CircleChat — Two User Test View
+# Group Chat - Two User Test
 
-A Node.js + Express + Socket.IO + MongoDB chat app designed for easy testing with two users on one screen.
+A simple Node.js + MongoDB + Socket.IO chat demo built for testing two users on the same screen.
 
-## What changed
-- No room/group selector on the frontend.
-- Two independent chat windows are visible side by side.
-- User 1 and User 2 each use their own Socket.IO connection.
-- Both users are automatically connected to the same `general` room.
-- Names can be changed from either panel with the Update button.
-- Messages are stored in MongoDB exactly like the original app.
+## Flow
+1. Each user window first asks for Username and Room ID.
+2. Press Join Room.
+3. That window switches to the chat screen.
+4. Use the same Room ID in both windows to chat with each other in real time.
+5. Leave returns that window to the join form.
 
 ## Environment variable
-Create `MONGODB_URI` in your hosting environment or `.env` file.
+Create `MONGODB_URI` in your hosting environment. Do not commit your real password or `.env` file to GitHub.
 
-Example format:
-`mongodb+srv://USERNAME:PASSWORD@CLUSTER.mongodb.net/circlechat?appName=Cluster0`
-
-Do not commit your real password to GitHub.
+## Run locally
+```bash
+npm install
+npm start
+```
