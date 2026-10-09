@@ -89,6 +89,12 @@ function createUserWindow(config) {
 
     username = name;
     activeRoom = room;
+
+    // Open the chat screen immediately so the Join button always responds.
+    // The server will then return history for this room.
+    showChatScreen(activeRoom);
+    messages.innerHTML = '<div class="empty-state">Connecting to room...</div>';
+
     socket.emit("user:join", { name: username, roomId: activeRoom });
   });
 
@@ -112,6 +118,10 @@ function createUserWindow(config) {
 
   socket.on("app:error", (text) => {
     showError(isJoined ? chatError : joinError, text || "Something went wrong.");
+  });
+
+  socket.on("connect_error", () => {
+    showError(isJoined ? chatError : joinError, "Server connection failed. Please refresh and try again.");
   });
 
   messageForm.addEventListener("submit", (event) => {
