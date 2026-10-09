@@ -192,3 +192,4 @@ start().catch((err) => {
   console.error("Startup error:", err.message);
   process.exit(1);
 });
+module.exports = server;
